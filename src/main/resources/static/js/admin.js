@@ -183,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
 						<td>${p.disponibilidad ? "Sí" : "No"}</td>
 						<td class="botonera">
 							<a class="btn-small yellow darken-2" onclick="editarProducto(${p.id})">Editar</a>
-							<a class="btn-small red" onclick="deshabilitarProducto(${p.id})">Eliminar</a>
+							<a class="btn-small red" onclick="deshabilitarProducto(${p.id})">D</a>
 						</td>
 					</tr>
 				`;
