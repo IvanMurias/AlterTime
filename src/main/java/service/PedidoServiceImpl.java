@@ -9,8 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.altertime.config.TicketProperties;
-
 import dto.PedidoResumenDTO;
 import model.DetallePedido;
 import model.Pedido;
@@ -157,6 +155,17 @@ public class PedidoServiceImpl implements PedidoService {
     @Override
     public List<Pedido> findByUsuarioAndEstado(Usuario usuario, Pedido.Estado estado) {
         return pedidoRepository.findByUsuarioAndEstado(usuario, estado);
+    }
+    @Override
+    public Optional<Pedido> updatePedido(Integer id, Pedido pedidoActualizado) {
+        return pedidoRepository.findById(id).map(pedidoExistente -> {
+            pedidoExistente.setEstado(pedidoActualizado.getEstado());
+            pedidoExistente.setDireccionEntrega(pedidoActualizado.getDireccionEntrega());
+            pedidoExistente.setDireccionFacturacion(pedidoActualizado.getDireccionFacturacion());
+            Pedido actualizado = pedidoRepository.save(pedidoExistente);
+            pdfservice.generarTicketPDF(pedidoExistente);
+            return actualizado;
+        });
     }
     
 

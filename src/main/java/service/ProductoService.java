@@ -12,4 +12,5 @@ public interface ProductoService {
     boolean deleteById(Integer id);
 	Optional<Producto> findById(Integer id);
 	List<Producto> findDisponibles();
+	Optional<Producto> findByNumSerie(Integer numSerie);
 }

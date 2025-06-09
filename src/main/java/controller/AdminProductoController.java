@@ -125,4 +125,10 @@ public class AdminProductoController {
     public List<Producto> listarTodosLosProductos() {
         return productoService.findAll();
     }
+    @GetMapping("/numserie/{numSerie}")
+    public ResponseEntity<Producto> getProductoPorNumeroSerie(@PathVariable Integer numSerie) {
+        Optional<Producto> producto = productoService.findByNumSerie(numSerie);
+        return producto.map(ResponseEntity::ok)
+                       .orElseGet(() -> ResponseEntity.notFound().build());
+    }
 }

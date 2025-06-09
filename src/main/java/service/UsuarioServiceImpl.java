@@ -80,13 +80,6 @@ public class UsuarioServiceImpl implements UsuarioService,UserDetailsService{
             usuario.setdni(updatedUsuario.getdni());
             usuario.setEmail(updatedUsuario.getEmail());
             usuario.setDireccion(updatedUsuario.getDireccion());
-
-            if (updatedUsuario.getPassword() != null && !updatedUsuario.getPassword().isBlank()) {
-                usuario.setPassword(passwordEncoder.encode(updatedUsuario.getPassword()));
-            }
-
-            usuario.setRol(updatedUsuario.getRol());
-
             return usuarioRepository.save(usuario);
         });
     }
@@ -122,5 +115,9 @@ public class UsuarioServiceImpl implements UsuarioService,UserDetailsService{
         usuarioRepository.save(usuario);
     }
 
+    @Override
+    public Usuario findByDni(String dni) {
+        return usuarioRepository.findByDni(dni).orElse(null);
+    }
 }
 

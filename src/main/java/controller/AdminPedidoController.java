@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import model.Pedido;
+import model.Usuario;
 import service.PdfService;
 import service.PedidoService;
 import service.UsuarioService;
@@ -69,5 +70,30 @@ public class AdminPedidoController {
         return usuarioService.findById(usuarioId)
                 .map(usuario -> ResponseEntity.ok(pedidoService.findByUsuario(usuario)))
                 .orElse(ResponseEntity.notFound().build());
+    }
+    @GetMapping("/{id}")
+    public ResponseEntity<Pedido> getPedidoById(@PathVariable Integer id) {
+        return pedidoService.findById(id)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
+    }
+    @PutMapping("/{id}")
+    public ResponseEntity<Pedido> updatePedido(@PathVariable Integer id, @RequestBody Pedido pedido) {
+        return pedidoService.updatePedido(id, pedido)
+            .map(p -> {
+                pdfService.generarTicketPDF(p);
+                return ResponseEntity.ok(p);
+            })
+            .orElse(ResponseEntity.notFound().build());
+    }
+    @GetMapping("/usuario/email/{email}")
+    public ResponseEntity<List<Pedido>> getPedidosByEmail(@PathVariable String email) {
+        Usuario usuario = usuarioService.findByEmail(email);
+        if (usuario != null) {
+            List<Pedido> pedidos = pedidoService.findByUsuario(usuario);
+            return ResponseEntity.ok(pedidos);
+        } else {
+            return ResponseEntity.status(404).body(List.of());
+        }
     }
 }

@@ -50,4 +50,22 @@ public class AdminUsuarioController {
         boolean deleted = usuarioService.deleteById(id);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
+    @GetMapping("/dni/{dni}")
+    public ResponseEntity<Usuario> getUsuarioPorDni(@PathVariable String dni) {
+        Usuario usuario = usuarioService.findByDni(dni);
+        if (usuario != null) {
+            return ResponseEntity.ok(usuario);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    @GetMapping("/email/{email}")
+    public ResponseEntity<Usuario> getUsuarioPorEmail(@PathVariable String email) {
+        Usuario usuario = usuarioService.findByEmail(email);
+        if (usuario != null) {
+            return ResponseEntity.ok(usuario);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

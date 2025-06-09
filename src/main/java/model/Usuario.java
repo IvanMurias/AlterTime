@@ -43,6 +43,7 @@ public class Usuario implements UserDetails{
     private Rol rol;
 
     public enum Rol {CLIENTE, ADMIN}
+    
 
 	public Integer getUsuario_id() {
 		return usuario_id;

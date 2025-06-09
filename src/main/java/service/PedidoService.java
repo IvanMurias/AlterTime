@@ -17,4 +17,5 @@ public interface PedidoService {
 	PedidoResumenDTO generarResumen(Integer id);
 	List<Pedido> findByEstado(Pedido.Estado estado);
 	List<Pedido> findByUsuarioAndEstado(Usuario usuario, Pedido.Estado estado);
+	Optional<Pedido> updatePedido(Integer id, Pedido pedido);
 }

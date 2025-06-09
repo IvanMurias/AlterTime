@@ -15,4 +15,5 @@ public interface UsuarioService {
 	Usuario autenticar(String email, String password);
 	void actualizarPassword(Usuario usuario);
 	Usuario actualizarCamposPerfil(Usuario usuarioExistente, Usuario datosActualizados);
+	Usuario findByDni(String dni);
 }

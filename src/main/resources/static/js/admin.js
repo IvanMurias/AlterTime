@@ -90,11 +90,15 @@ document.addEventListener('DOMContentLoaded', () => {
 				return;
 			case "productos":
 				contenedor.innerHTML = "<h4>Gestión de productos</h4><div id='productos-container'></div>";
-
 				setTimeout(cargarProductos, 0);
 				break;
 			case "pedidos":
 				contenedor.innerHTML = "<h4>Gestión de pedidos</h4><div id='pedidos-container'></div>";
+				setTimeout(cargarPedidos, 0);
+				break;
+			case "usuarios":
+				contenedor.innerHTML = "<h4>Gestión de usuarios</h4><div id='usuarios-container'</div>";
+				setTimeout(cargarUsuarios, 0);
 				break;
 			default:
 				contenedor.innerHTML = "<p>Sección no encontrada.</p>";
@@ -316,4 +320,403 @@ document.addEventListener('DOMContentLoaded', () => {
 			M.toast({ html: "Error al cargar producto: " + err.message });
 		}
 	};
+
+	function cargarPedidos() {
+		const container = document.getElementById("contenido-principal");
+		container.innerHTML = `
+			<h4>Gestión de pedidos</h4>
+			<div class="row">
+				<div class="input-field col s4">
+					<input type="text" id="buscar-id" placeholder="Buscar por ID de pedido">
+				</div>
+				<div class="input-field col s4">
+					<input type="text" id="buscar-usuario-email" placeholder="Buscar por Email de usuario">
+				</div>
+				<div class="input-field col s4">
+					<a class="btn blue" id="btn-buscar">Buscar</a>
+					<a class="btn grey" id="btn-reset">Reset</a>
+				</div>
+			</div>
+			<div id="formulario-edicion" style="display: none; margin-bottom: 20px;"></div>
+			<table class="highlight responsive-table">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Cliente</th>
+						<th>Fecha</th>
+						<th>Total (€)</th>
+						<th>Estado</th>
+						<th>Entrega</th>
+						<th>Facturación</th>
+						<th>Acciones</th>
+					</tr>
+				</thead>
+				<tbody id="tabla-pedidos">
+				</tbody>
+			</table>
+		`;
+
+		document.getElementById("btn-buscar").addEventListener("click", async () => {
+			const id = document.getElementById("buscar-id").value.trim();
+			const usuarioemail = document.getElementById("buscar-usuario-email").value.trim();
+
+			if (id) {
+				const res = await fetch(`/api/admin/pedidos/${id}`, {
+					headers: { Authorization: `Bearer ${token}` }
+				});
+				if (res.ok) {
+					const pedido = await res.json();
+					mostrarPedidos([pedido]);
+				} else {
+					M.toast({ html: "Pedido no encontrado" });
+				}
+			} else if (usuarioemail) {
+				const res = await fetch(`/api/admin/pedidos/usuario/email/${encodeURIComponent(usuarioEmail)}`, {
+					headers: { Authorization: `Bearer ${token}` }
+				});
+				if (res.ok) {
+					const pedidos = await res.json();
+					mostrarPedidos(pedidos);
+				} else {
+					M.toast({ html: "Usuario no encontrado o sin pedidos" });
+				}
+			} else {
+				cargarTodosPedidos();
+			}
+		});
+
+		document.getElementById("btn-reset").addEventListener("click", () => {
+			document.getElementById("buscar-id").value = "";
+			document.getElementById("buscar-usuario-email").value = "";
+			cargarTodosPedidos();
+		});
+
+		cargarTodosPedidos();
+	}
+
+	async function cargarTodosPedidos() {
+		try {
+			const res = await fetch("/api/admin/pedidos", {
+				headers: { Authorization: `Bearer ${token}` }
+			});
+			if (!res.ok) throw new Error("Error al obtener pedidos");
+			const pedidos = await res.json();
+			mostrarPedidos(pedidos);
+		} catch (err) {
+			console.error(err);
+			M.toast({ html: "No se pudieron cargar los pedidos" });
+		}
+	}
+
+	function mostrarPedidos(pedidos) {
+		const tbody = document.getElementById("tabla-pedidos");
+		tbody.innerHTML = "";
+
+		pedidos.forEach(p => {
+			tbody.innerHTML += `
+				<tr>
+					<td>${p.pedido_id}</td>
+					<td>${p.usuario?.email || "-"}</td>
+					<td>${p.fechaPedido}</td>
+					<td>${p.total.toFixed(2)}</td>
+					<td>${p.estado}</td>
+					<td>${p.direccionEntrega}</td>
+					<td>${p.direccionFacturacion}</td>
+					<td>
+						<a class="btn-small yellow darken-2" onclick="editarPedido(${p.pedido_id})">Editar</a>
+						<a class="btn-small red" onclick="eliminarPedido(${p.pedido_id})">Eliminar</a>
+					</td>
+				</tr>
+			`;
+		});
+	}
+
+	window.editarPedido = async function(id) {
+		try {
+			const res = await fetch(`/api/admin/pedidos/${id}`, {
+				headers: { Authorization: `Bearer ${token}` }
+			});
+			if (!res.ok) throw new Error("No se encontró el pedido");
+			const p = await res.json();
+
+			const formWrapper = document.getElementById("formulario-edicion");
+			formWrapper.innerHTML = `
+				<div class="card">
+					<div class="card-content">
+						<span class="card-title">Editar Pedido #${p.pedido_id}</span>
+						<form id="form-editar-pedido">
+							<div class="input-field">
+								<select id="estado">
+									<option value="pendiente" ${p.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
+									<option value="enviado" ${p.estado === 'enviado' ? 'selected' : ''}>Enviado</option>
+									<option value="cancelado" ${p.estado === 'cancelado' ? 'selected' : ''}>Cancelado</option>
+								</select>
+								<label>Estado</label>
+							</div>
+							<div class="input-field">
+								<input type="text" id="direccionEntrega" value="${p.direccionEntrega || ''}" required>
+								<label class="active">Dirección de entrega</label>
+							</div>
+							<div class="input-field">
+								<input type="text" id="direccionFacturacion" value="${p.direccionFacturacion || ''}" required>
+								<label class="active">Dirección de facturación</label>
+							</div>
+							<button class="btn green" type="submit">Guardar</button>
+							<a class="btn red right" onclick="document.getElementById('formulario-edicion').style.display='none'">Cancelar</a>
+						</form>
+					</div>
+				</div>
+			`;
+			formWrapper.style.display = "block";
+			M.FormSelect.init(formWrapper.querySelectorAll('select'));
+
+			document.getElementById("form-editar-pedido").addEventListener("submit", async (e) => {
+				e.preventDefault();
+
+				const pedidoActualizado = {
+					pedido_id: p.pedido_id,
+					estado: document.getElementById("estado").value,
+					direccionEntrega: document.getElementById("direccionEntrega").value,
+					direccionFacturacion: document.getElementById("direccionFacturacion").value,
+					usuario: { usuario_id: p.usuario.usuario_id },
+					fechaPedido: p.fechaPedido,
+					total: p.total,
+					dir_ticket: p.dir_ticket,
+					detalles: p.detalles
+				};
+
+				try {
+					const res = await fetch(`/api/admin/pedidos/${p.pedido_id}`, {
+						method: "PUT",
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: `Bearer ${token}`
+						},
+						body: JSON.stringify(pedidoActualizado)
+					});
+					if (!res.ok) throw new Error("Error al actualizar el pedido");
+
+					M.toast({ html: "Pedido actualizado" });
+					document.getElementById("formulario-edicion").style.display = "none";
+					cargarTodosPedidos();
+				} catch (err) {
+					console.error(err);
+					M.toast({ html: "Error: " + err.message });
+				}
+			});
+		} catch (err) {
+			console.error(err);
+			M.toast({ html: "Error al cargar pedido: " + err.message });
+		}
+	};
+
+	window.eliminarPedido = async function(id) {
+		if (!confirm("¿Estás seguro de eliminar este pedido?")) return;
+
+		try {
+			const res = await fetch(`/api/admin/pedidos/${id}`, {
+				method: "DELETE",
+				headers: { Authorization: `Bearer ${token}` }
+			});
+			if (!res.ok) throw new Error("Error al eliminar el pedido");
+
+			M.toast({ html: "Pedido eliminado" });
+			cargarTodosPedidos();
+		} catch (err) {
+			console.error(err);
+			M.toast({ html: "Error: " + err.message });
+		}
+	};
+	function cargarUsuarios() {
+		const container = document.getElementById("contenido-principal");
+		container.innerHTML = `
+			<h4>Gestión de usuarios</h4>
+			<div class="row">
+				<div class="input-field col s4">
+					<input type="text" id="buscar-email" placeholder="Buscar por email">
+				</div>
+				<div class="input-field col s4">
+				    <input type="text" id="buscar-dni" placeholder="Buscar por DNI">
+				  </div>
+				<div class="input-field col s6">
+					<a class="btn blue" id="btn-buscar-usuario">Buscar</a>
+					<a class="btn grey" id="btn-reset-usuario">Reset</a>
+				</div>
+			</div>
+			<div id="formulario-edicion-usuario" style="display: none; margin-bottom: 20px;"></div>
+			<table class="highlight responsive-table">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Nombre</th>
+						<th>Email</th>
+						<th>DNI</th>
+						<th>Dirección</th>
+						<th>Acciones</th>
+					</tr>
+				</thead>
+				<tbody id="tabla-usuarios"></tbody>
+			</table>
+		`;
+
+		document.getElementById("btn-buscar-usuario").addEventListener("click", async () => {
+			const email = document.getElementById("buscar-email").value.trim();
+			const dni = document.getElementById("buscar-dni").value.trim();
+
+			try {
+				if (email) {
+					const res = await fetch(`/api/admin/usuarios/email/${encodeURIComponent(email)}`, {
+						headers: { Authorization: `Bearer ${token}` }
+					});
+					if (!res.ok) throw new Error("No se encontró el usuario por email");
+					const usuario = await res.json();
+					mostrarUsuarios([usuario]);
+				} else if (dni) {
+					const res = await fetch(`/api/admin/usuarios/dni/${encodeURIComponent(dni)}`, {
+						headers: { Authorization: `Bearer ${token}` }
+					});
+					if (!res.ok) throw new Error("No se encontró el usuario por DNI");
+					const usuario = await res.json();
+					mostrarUsuarios([usuario]);
+				} else {
+					cargarTodosUsuarios();
+				}
+			} catch (err) {
+				M.toast({ html: err.message });
+			}
+		});
+
+		document.getElementById("btn-reset-usuario").addEventListener("click", () => {
+			document.getElementById("buscar-email").value = "";
+			document.getElementById("buscar-dni").value = "";
+			cargarTodosUsuarios();
+		});
+
+		cargarTodosUsuarios();
+	}
+
+	async function cargarTodosUsuarios() {
+		try {
+			const res = await fetch("/api/admin/usuarios", {
+				headers: { Authorization: `Bearer ${token}` }
+			});
+			if (!res.ok) throw new Error("Error al obtener usuarios");
+			const usuarios = await res.json();
+			mostrarUsuarios(usuarios);
+		} catch (err) {
+			console.error(err);
+			M.toast({ html: err.message });
+		}
+	}
+
+	function mostrarUsuarios(usuarios) {
+		const tbody = document.getElementById("tabla-usuarios");
+		tbody.innerHTML = "";
+		usuarios.forEach(u => {
+			tbody.innerHTML += `
+				<tr>
+					<td>${u.usuario_id}</td>
+					<td>${u.nombre} ${u.apellidos}</td>
+					<td>${u.email}</td>
+					<td>${u.dni}</td>
+					<td>${u.direccion}</td>
+					<td>
+						<a class="btn-small yellow darken-2" onclick="editarUsuario(${u.usuario_id})">Editar</a>
+						<a class="btn-small red" onclick="eliminarUsuario(${u.usuario_id})">Eliminar</a>
+					</td>
+				</tr>
+			`;
+		});
+	}
+
+	window.editarUsuario = async function(id) {
+		try {
+			const res = await fetch(`/api/admin/usuarios/${id}`, {
+				headers: { Authorization: `Bearer ${token}` }
+			});
+			if (!res.ok) throw new Error("No se encontró el usuario");
+			const u = await res.json();
+
+			document.getElementById("formulario-edicion-usuario").innerHTML = `
+				<div class="card">
+					<div class="card-content">
+						<span class="card-title">Editar Usuario</span>
+						<form id="form-editar-usuario">
+							<div class="input-field">
+								<input type="text" id="nombre" value="${u.nombre}" required>
+								<label class="active">Nombre</label>
+							</div>
+							<div class="input-field">
+								<input type="text" id="apellidos" value="${u.apellidos}" required>
+								<label class="active">Apellidos</label>
+							</div>
+							<div class="input-field">
+								<input type="text" id="dni" value="${u.dni}" required>
+								<label class="active">DNI</label>
+							</div>
+							<div class="input-field">
+								<input type="email" id="email" value="${u.email}" required>
+								<label class="active">Email</label>
+							</div>
+							<div class="input-field">
+								<input type="text" id="direccion" value="${u.direccion}" required>
+								<label class="active">Dirección</label>
+							</div>
+							<button class="btn green" type="submit">Guardar</button>
+							<a class="btn red right" onclick="document.getElementById('formulario-edicion-usuario').style.display='none'">Cancelar</a>
+						</form>
+					</div>
+				</div>
+			`;
+			document.getElementById("formulario-edicion-usuario").style.display = "block";
+
+			document.getElementById("form-editar-usuario").addEventListener("submit", async (e) => {
+				e.preventDefault();
+				const usuarioEditado = {
+					nombre: document.getElementById("nombre").value,
+					apellidos: document.getElementById("apellidos").value,
+					dni: document.getElementById("dni").value,
+					email: document.getElementById("email").value,
+					direccion: document.getElementById("direccion").value
+				};
+
+				try {
+					const res = await fetch(`/api/admin/usuarios/${id}`, {
+						method: "PUT",
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: `Bearer ${token}`
+						},
+						body: JSON.stringify(usuarioEditado)
+					});
+					if (!res.ok) throw new Error("Error al actualizar el usuario");
+					M.toast({ html: "Usuario actualizado" });
+					document.getElementById("formulario-edicion-usuario").style.display = "none";
+					cargarTodosUsuarios();
+				} catch (err) {
+					M.toast({ html: err.message });
+				}
+			});
+		} catch (err) {
+			console.error(err);
+			M.toast({ html: err.message });
+		}
+	};
+
+	window.eliminarUsuario = async function(id) {
+		if (!confirm("¿Estás seguro de eliminar este usuario?")) return;
+		try {
+			const res = await fetch(`/api/admin/usuarios/${id}`, {
+				method: "DELETE",
+				headers: { Authorization: `Bearer ${token}` }
+			});
+			if (!res.ok) throw new Error("Error al eliminar usuario");
+			M.toast({ html: "Usuario eliminado" });
+			cargarTodosUsuarios();
+		} catch (err) {
+			console.error(err);
+			M.toast({ html: err.message });
+		}
+	};
+
 });
