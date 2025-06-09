@@ -36,8 +36,12 @@ public class ProductoServiceImpl implements ProductoService {
             producto.setNombre(nuevoProducto.getNombre());
             producto.setAño(nuevoProducto.getAño());
             producto.setNumSerie(nuevoProducto.getNumSerie());
-            producto.setDirImagen(nuevoProducto.getDirImagen());
             producto.setPrecio(nuevoProducto.getPrecio());
+            producto.setDisponibilidad(nuevoProducto.isDisponibilidad());
+
+            if (nuevoProducto.getRutaImagen() != null) {
+            	producto.setRutaImagen(nuevoProducto.getRutaImagen());
+            }
             return productoRepository.save(producto);
         });
     }
@@ -49,5 +53,10 @@ public class ProductoServiceImpl implements ProductoService {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public List<Producto> findDisponibles() {
+        return productoRepository.findByDisponibilidadTrue();
     }
 }

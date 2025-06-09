@@ -1,5 +1,7 @@
 package model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,13 +26,14 @@ public class DetallePedido {
 
     @ManyToOne
     @JoinColumn(name = "pedido_id")
+    @JsonBackReference
     private Pedido pedido;
 
     @ManyToOne
     @JoinColumn(name = "producto_id")
     private Producto producto;
     
-    private double precio_unitario;
+    private double precio;
     
     
 	public Integer getDetalle_id() {
@@ -52,10 +55,10 @@ public class DetallePedido {
 		this.producto = producto;
 	}
 
-	public double getPrecio_unitario() {
-		return precio_unitario;
+	public double getPrecio() {
+		return precio;
 	}
-	public void setPrecio_unitario(double precio_unitario) {
-		this.precio_unitario = precio_unitario;
+	public void setPrecio(double precio) {
+		this.precio = precio;
 	}
 }

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Carrito de Compras</title>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+	rel="stylesheet" />
+<link rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+<link href="css/Retoques.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+
+	<div id="navbar-placeholder"></div>
+
+	<div class="container container-carrito" style="margin-top: 40px;">
+		<h4>Tu carrito</h4>
+		<div id="datos-container">
+			<div class="row">
+				<form class="col s12" id="form-direcciones">
+					<div class="input-field col s12">
+						<input id="direccionEntrega" type="text" required name="direccionEntrega" /> <label
+							for="direccionEntrega">Dirección de entrega</label>
+					</div>
+					<div class="input-field col s12">
+						<input id="direccionFacturacion" type="text" required name="direccionFacturacion"/> <label
+							for="direccionFacturacion">Dirección de facturación</label>
+					</div>
+					<div class="col s12 center-align" style="margin-top: 20px;">
+					</div>
+				</form>
+			</div>
+		</div>
+		<div id="carrito-container"></div>
+		<h5 id="total-carrito" class="right-align"></h5>
+		<div class="right-align" style="margin-top: 20px;">
+			<button id="btn-comprar" class="btn green">Comprar</button>
+		</div>
+	</div>
+
+	<div id="footer-placeholder"></div>
+
+	<script
+		src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+	<script src="js/carrito.js"></script>
+</body>
+</html>

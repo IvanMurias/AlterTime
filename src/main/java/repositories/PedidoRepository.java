@@ -9,4 +9,6 @@ import model.Usuario;
 
 public interface PedidoRepository extends JpaRepository<Pedido, Integer> {
 	List<Pedido> findByUsuario(Usuario usuario);
+	List<Pedido> findByEstado(Pedido.Estado estado);
+	List<Pedido> findByUsuarioAndEstado(Usuario usuario, Pedido.Estado estado);
 }

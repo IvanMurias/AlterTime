@@ -1,0 +1,12 @@
+{"properties": [
+  {
+    "name": "pdf.ticket.path",
+    "type": "java.lang.String",
+    "description": "A description for 'pdf.ticket.path'"
+  },
+  {
+    "name": "jwt.secret",
+    "type": "java.lang.String",
+    "description": "A description for 'jwt.secret'"
+  }
+]}

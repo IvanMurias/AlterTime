@@ -8,8 +8,11 @@ import model.Usuario;
 public interface UsuarioService {
     List<Usuario> findAll();
     Optional<Usuario> findById(Integer id);
-    Optional<Usuario> updateUsuario(Integer id, Usuario usuario);
     boolean deleteById(Integer id);
-    Optional<Usuario> findByEmail(String email);
 	Usuario saveUsuario(Usuario usuario);
+	Usuario findByEmail(String email);
+	Optional<Usuario> updateUsuarioComoAdmin(Integer id, Usuario usuario);
+	Usuario autenticar(String email, String password);
+	void actualizarPassword(Usuario usuario);
+	Usuario actualizarCamposPerfil(Usuario usuarioExistente, Usuario datosActualizados);
 }

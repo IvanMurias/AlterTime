@@ -11,4 +11,5 @@ public interface ProductoService {
     Optional<Producto> update(Integer id, Producto producto);
     boolean deleteById(Integer id);
 	Optional<Producto> findById(Integer id);
+	List<Producto> findDisponibles();
 }

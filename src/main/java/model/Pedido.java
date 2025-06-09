@@ -3,7 +3,10 @@ package model;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -39,8 +42,13 @@ public class Pedido {
 
     @Enumerated(EnumType.STRING)
     private Estado estado;
+    @Column(name="direccion_entrega")
+    private String direccionEntrega;
+    @Column(name="direccion_facturacion")
+    private String direccionFacturacion;
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<DetallePedido> detalles;
 
     public enum Estado {
@@ -103,5 +111,21 @@ public class Pedido {
 
 	public void setDetalles(List<DetallePedido> detalles) {
 		this.detalles = detalles;
+	}
+
+	public String getDireccionEntrega() {
+		return direccionEntrega;
+	}
+
+	public void setDireccionEntrega(String direccionEntrega) {
+		this.direccionEntrega = direccionEntrega;
+	}
+
+	public String getDireccionFacturacion() {
+		return direccionFacturacion;
+	}
+
+	public void setDireccionFacturacion(String direccionFacturacion) {
+		this.direccionFacturacion = direccionFacturacion;
 	}
 }
